@@ -37,7 +37,18 @@
             display: none;
         }
         #start-btn {
-            display: block;
+            display: inline;
+            margin: 1rem auto;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            background-color: #1e90ff;
+            color: white;
+            cursor: pointer;
+        }
+        #return-btn {
+            display: inline;
             margin: 1rem auto;
             padding: 1rem 2rem;
             font-size: 1rem;
@@ -48,6 +59,9 @@
             cursor: pointer;
         }
         #start-btn:hover {
+            background-color: #0c71c3;
+        }
+        #return-btn:hover {
             background-color: #0c71c3;
         }
         .center {
@@ -80,6 +94,11 @@
             top: 0;
             left: 0;
         }
+        .all-buttons {
+            display: block;
+            margin: 1rem auto;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -95,7 +114,10 @@
         <video id="video" autoplay muted class="overlaying"></video>
     </div>
 
-    <button id="start-btn">Start Checking</button>
+    <div class="all-buttons">
+        <button id="start-btn">Start Checking</button>
+        <button id="return-btn">Return to Home</button>
+    </div>
 
     <div id="truth-banner">
         
@@ -113,6 +135,7 @@
         const video = document.getElementById('video');
         const banner = document.getElementById('truth-banner');
         const startBtn = document.getElementById('start-btn');
+        const homeBtn = document.getElementById('return-btn');
 
         // Access webcam and microphone
         async function startMedia() {
@@ -128,8 +151,12 @@
             }
         }
 
-        startBtn.addEventListener('click', startMedia);
+        async function toHomePage() {
+            document.location.href = "index.html";
+        }
 
+        startBtn.addEventListener('click', startMedia);
+        homeBtn.addEventListener('click', toHomePage)
 
         //THis is where the true project starts
         ws = new WebSocket("ws://veritablai.tech:8000/ws/audio");
