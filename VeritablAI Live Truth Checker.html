@@ -19,7 +19,7 @@
         #video-container {
             display: flex;
             justify-content: center;
-            margin-top: 2rem;
+            margin-top: 1rem;
         }
         video {
             width: 640px;
@@ -38,7 +38,7 @@
         }
         #start-btn {
             display: block;
-            margin: 2rem auto;
+            margin: 1rem auto;
             padding: 1rem 2rem;
             font-size: 1rem;
             border: none;
@@ -54,7 +54,31 @@
             display: block;
             margin-left: auto;
             margin-right: auto;
-            width: 50%;
+        }
+        .overlaid {
+            position: absolute;
+            bottom: 1;
+            right: 400;
+            margin-top: auto;
+        }
+        div {
+            position: relative;
+            display: inline;
+        }
+        .static-bg {
+            position: relative;
+            top: 0;
+            left: 0;
+        }
+        .overlaying {
+            position: absolute;
+            top: 17px;
+            left: 390px; 
+        }
+        .overlay-parent {
+            position: relative;
+            top: 0;
+            left: 0;
         }
     </style>
 </head>
@@ -65,14 +89,23 @@
         <div id="transcript"></div>
         <div id="truthScore"></div>
     </header>
-
-    <div id="video-container">
-        <video id="video" autoplay muted></video>
+    <img src="images/breaking_news.png" width="675px" class="center"></img>
+    <div id="video-container" class="overlay-parent">
+        <img src="images/sample_tv.png" width="675px" height="567px" class="static-bg"></img>
+        <video id="video" autoplay muted class="overlaying"></video>
     </div>
 
     <button id="start-btn">Start Checking</button>
 
-    <div id="truth-banner"></div>
+    <div id="truth-banner">
+        
+    </div>
+    <p style="text-align:center;font-size:19px">(Change later) Are you sure you are telling the truth, the whole truth, and
+        nothing but the truth while on the air? <br> Click [Start Checking] and speak your mind. Our AI-driven
+        information detector will tell you if what you're saying is factually correct. <br> Will you put yourself to
+        the test in front of America?
+    </p>
+    <img src="images/breaking_news.png" width="675px" class="center">
 
     <script>
         let ws;
@@ -130,6 +163,6 @@
             ws.close();
         };
     </script>
-    <img src="images/breaking_news.png" width="1000px" class="center"></img>
+    
 </body>
 </html>
