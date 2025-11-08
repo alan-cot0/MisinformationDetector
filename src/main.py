@@ -2,6 +2,7 @@ from RealtimeSTT import AudioToTextRecorder
 import signal, sys
 
 SENTINEL = "Alexa, stop."
+TEMP_FILE_NAME = "_storedtext.txt"
 
 class boolPtr:
     def __init__(this, boolean):
@@ -11,28 +12,28 @@ class boolPtr:
     def get(this):
         return this.boolean
 
-def process_text(text):
-    print(text)
-    if(str(text) == SENTINEL):
-        signal.raise_signal(signal.SIGINT)
-
 # This is the test example. I'd need to figure out how to implement a sentinel check.
 if __name__ == '__main__':
     def handle_interrupt(_signal, frame=None):
         if(_signal == signal.SIGINT):
             continuing.set(False)
             recorder.shutdown()
-            # print("\nConfirm stopping the program? (Say Yes or No.)")
 
-    continuing = boolPtr(True)
-    signal.signal(signal.SIGINT, handle_interrupt)
-    print("Wait until it says 'speak now'")
-    recorder = AudioToTextRecorder()
+    with open(TEMP_FILE_NAME, "w+", encoding="utf-8") as tempFile:
+        def process_text(text):
+            tempFile.write(str(text) + "\n")
+            if(str(text) == SENTINEL):
+                signal.raise_signal(signal.SIGINT)
 
-    while True:
-        recorder.text(process_text)
-        if(not continuing.get()):
-            break
-    sys.stdin.flush()
-    print("\nExiting...")
-    # recorder.shutdown()
+        continuing = boolPtr(True)
+        signal.signal(signal.SIGINT, handle_interrupt)
+        print("Wait until it says 'speak now'")
+        recorder = AudioToTextRecorder()
+
+        while True:
+            recorder.text(process_text)
+            if(not continuing.get()):
+                break
+        sys.stdin.flush()
+        print("\nExiting...")
+        tempFile.close()

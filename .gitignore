@@ -208,3 +208,6 @@ __marimo__/
 
 #Snowflake Access
 account_snowflake_reacher.py
+
+# Any File Communications
+_storedtext.txt
