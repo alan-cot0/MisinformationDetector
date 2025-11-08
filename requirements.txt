@@ -1,1 +1,7 @@
 RealtimeSTT
+fastAPI
+uvicorn
+websockets
+python-multipart
+snowflake-connector-python
+google-generativeai
