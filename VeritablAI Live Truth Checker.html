@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Veritablai Live Truth Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #1e2a38;
+            color: #fff;
+            padding: 1rem;
+            text-align: center;
+        }
+        #video-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        video {
+            width: 640px;
+            height: 480px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+        #truth-banner {
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            border-radius: 5px;
+            color: #fff;
+            display: none;
+        }
+        #start-btn {
+            display: block;
+            margin: 2rem auto;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            background-color: #1e90ff;
+            color: white;
+            cursor: pointer;
+        }
+        #start-btn:hover {
+            background-color: #0c71c3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Veritablai Live Truth Checker</h1>
+        <p>Realtime truth analysis powered by Gemini, Vultr, & Snowflake API</p>
+        <div id="transcript"></div>
+        <div id="truthScore"></div>
+    </header>
+
+    <div id="video-container">
+        <video id="video" autoplay muted></video>
+    </div>
+
+    <button id="start-btn">Start Checking</button>
+
+    <div id="truth-banner"></div>
+
+    <script>
+        let ws;
+        let mediaRecorder;
+        const video = document.getElementById('video');
+        const banner = document.getElementById('truth-banner');
+        const startBtn = document.getElementById('start-btn');
+
+        // Access webcam and microphone
+        async function startMedia() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                video.srcObject = stream;
+
+                // TODO: Connect to backend for realtime STT + Gemini analysis
+                // For demo, we simulate updates
+                simulateTruthCheck();
+            } catch (err) {
+                alert('Error accessing camera/microphone: ' + err);
+            }
+        }
+
+        startBtn.addEventListener('click', startMedia);
+
+
+        //THis is where the true project starts
+        ws = new WebSocket("ws://veritablai.tech:8000/ws/audio");
+        mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+
+        document.getElementById("startBtn").onclick = async () => {
+            ws = new WebSocket("ws://veritablai.tech:8000/ws/audio");
+
+            ws.onopen = () => console.log("WebSocket connected");
+            ws.onmessage = event => {
+                const data = JSON.parse(event.data);
+                document.getElementById("transcript").innerText = data.transcript;
+                document.getElementById("truthScore").innerText = 
+                    `Truth Score: ${Math.round(data.truth_score * 100)}% - ${data.message}`;
+            };
+
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+
+            mediaRecorder.ondataavailable = event => {
+                if (event.data.size > 0 && ws.readyState === WebSocket.OPEN) {
+                    event.data.arrayBuffer().then(buffer => ws.send(buffer));
+                }
+            };
+
+            mediaRecorder.start(250); // 250ms chunks
+        };
+
+        document.getElementById("stopBtn").onclick = () => {
+            mediaRecorder.stop();
+            ws.close();
+        };
+    </script>
+</body>
+</html>
