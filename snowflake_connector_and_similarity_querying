@@ -1,0 +1,80 @@
+import snowflake.connector
+from account_snowflake_reacher import USER, PASSWORD, ACCOUNT, WAREHOUSE, DATABASE, SCHEMA, ROLE
+
+def query_misinfo(stt_text, top_n=3):
+    """
+    Process a single STT chunk in Snowflake and return top matching KB paragraphs.
+    stt_text (str) is the text from RealtimeSTT
+    top_n (int) is how many of the top most similar paragraphs to use for the truth comparison. It is set by default to three at the time of writing.
+    This will return a list of dicts; each dict has paragraph_id, paragraph_text, similarity_score, source_url.
+    """
+
+    # Here we are going to connect to Snowflake
+    ctx = snowflake.connector.connect(
+        user=USER,
+        password=PASSWORD,
+        account=ACCOUNT,
+        warehouse=WAREHOUSE,
+        database=DATABASE,
+        schema=SCHEMA,
+        role=ROLE
+    )
+    cs = ctx.cursor()
+
+    try:
+        # Create temporary input table
+        cs.execute("CREATE OR REPLACE TEMP TABLE stt_input (stt_id STRING, stt_text STRING)")
+
+        # Insert the STT chunk (We are using RealtimeSTT for speech to text purposes.)
+        cs.execute("INSERT INTO stt_input (stt_id, stt_text) VALUES (%s, %s)", ("chunk1", stt_text))
+
+        # Embed the chunk into temp table
+        cs.execute("""
+            CREATE OR REPLACE TEMP TABLE stt_embedded AS
+            SELECT
+                stt_id,
+                stt_text,
+                AI_EMBED('snowflake-arctic-embed-l-v2.0', stt_text) AS embedding
+            FROM stt_input
+        """)
+
+        # Query similarity against KB
+        cs.execute(f"""
+            SELECT
+                kb.paragraph_id,
+                kb.paragraph_text,
+                VECTOR_COSINE_SIMILARITY(s.embedding, kb.embedding) AS similarity_score,
+                kb.source_url
+            FROM stt_embedded s
+            CROSS JOIN embedded_paragraphs kb
+            ORDER BY similarity_score DESC
+            LIMIT {top_n}
+        """)
+
+        results = []
+        for row in cs.fetchall():
+            results.append({
+                "paragraph_id": row[0],
+                "paragraph_text": row[1],
+                "similarity_score": row[2],
+                "source_url": row[3]
+            })
+        print("Connecting to Snowflake…")
+        print("Fetched rows:", len(results))
+
+        return results
+
+    finally:
+        cs.close()
+        ctx.close()
+
+
+# Example usage:
+if __name__ == "__main__":
+    stt_chunk = "COVID-19 is just a cold"
+    top_matches = query_misinfo(stt_chunk)
+    for m in top_matches:
+        print(m)
+
+
+
