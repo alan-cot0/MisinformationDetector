@@ -2,7 +2,7 @@
 import asyncio
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from RealtimeSTT import AudioToTextProcessor  #  adapted STT class
+from RealtimeSTT import AudioToTextRecorder  #  adapted STT class
 from fastapi import FastAPI, UploadFile, File
 from gemini_TRUTH_ANALYZER import gemini_fact_check
 
@@ -21,15 +21,14 @@ async def websocket_audio_endpoint(websocket: WebSocket):
     print("Client connected")
 
     # Create an instance of the STT processor
-    stt_processor = AudioToTextProcessor()  
+    stt_processor = AudioToTextRecorder()  
 
     try:
         while True:
             audio_chunk = await websocket.receive_bytes()
             
             # Convert audio chunk -> text
-            text = stt_processor.process_chunk(audio_chunk)
-
+            text = stt_processor.feed_audio(audio_chunk)
             # Run Gemini truth analysis
             #truth_score, message = analyze_truth(text)
             @app.post("/truth-check/")
