@@ -12,7 +12,7 @@ class boolPtr:
     def get(this):
         return this.boolean
 
-# This is the test example. I'd need to figure out how to implement a sentinel check.
+# This is the test example. 
 if __name__ == '__main__':
     def handle_interrupt(_signal, frame=None):
         if(_signal == signal.SIGINT):
