@@ -16,17 +16,17 @@ import sys
 import time
 import snowflake.connector
 import xml.etree.ElementTree as ET
-from account_snowflake_reach import user, password, account, DATABASE, SCHEMA
-
+"""from account_snowflake_reach import user, password, account, DATABASE, SCHEMA
+"""
 # --------------------
 # CONFIG - set these
 # --------------------
 XML_PATH = "/mnt/blockstorage/enwiki-latest-pages-articles.xml"  # change as needed
-SNOWFLAKE_USER = user
-SNOWFLAKE_PASSWORD = password
-SNOWFLAKE_ACCOUNT = account     # e.g. abc12345.us-east-1
-SNOWFLAKE_DATABASE = DATABASE
-SNOWFLAKE_SCHEMA = SCHEMA
+SNOWFLAKE_USER = "hroundcount"
+SNOWFLAKE_PASSWORD = "Hroundcount32776"
+SNOWFLAKE_ACCOUNT = "zta78482.east-us-2.azure"     # e.g. abc12345.us-east-1
+SNOWFLAKE_DATABASE = "stt_misinfo"
+SNOWFLAKE_SCHEMA = "kb"
 SNOWFLAKE_TABLE = "kb_paragraphs" #????????????????!!!
 BATCH_SIZE = 500                 # rows per insert batch (tune for perf)
 MAX_PARAGRAPHS_PER_PAGE = 1000   # safety cap to avoid runaway pages
@@ -59,14 +59,28 @@ def split_into_paragraphs(wikitext):
 # --------------------
 # Snowflake helpers
 # --------------------
-def get_sf_connection():
+"""def get_sf_connection():
     return snowflake.connector.connect(
         user=SNOWFLAKE_USER,
         password=SNOWFLAKE_PASSWORD,
         account=SNOWFLAKE_ACCOUNT,
         database=SNOWFLAKE_DATABASE,
         schema=SNOWFLAKE_SCHEMA,
+    )"""
+def get_sf_connection():
+    conn = snowflake.connector.connect(
+        user=SNOWFLAKE_USER,
+        password=SNOWFLAKE_PASSWORD,
+        account=SNOWFLAKE_ACCOUNT,
+        warehouse="stt_wh",  
+        role="stt_app_role",      
+        database=SNOWFLAKE_DATABASE,
+        schema=SNOWFLAKE_SCHEMA,
     )
+    conn.cursor().execute(f"USE DATABASE {SNOWFLAKE_DATABASE}")
+    conn.cursor().execute(f"USE SCHEMA {SNOWFLAKE_SCHEMA}")
+    return conn
+
 
 def create_table_if_missing(conn):
     cur = conn.cursor()
@@ -154,9 +168,8 @@ def stream_wiki_to_snowflake(xml_path):
             processed_pages += 1
             # Free memory for processed element: remove from tree
             elem.clear()
-            # also clean up parent references to avoid memory growth
-            while elem.getprevious() is not None:
-                del elem.getparent()[0]
+            
+
 
             # periodical logging
             if processed_pages % 1000 == 0:
