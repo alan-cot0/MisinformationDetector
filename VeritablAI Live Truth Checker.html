@@ -75,6 +75,9 @@
         #return-btn:hover {
             background-color: #0c71c3;
         }
+        #stop-btn:hover {
+            background-color: #0c71c3;
+        }
         .center {
             display: block;
             margin-left: auto;
@@ -217,6 +220,7 @@
         document.getElementById("start-btn").onclick = async () => {
             ws = new WebSocket("ws://veritablai.tech:8000/ws/audio");
 
+            // Reading the JSON data...
             ws.onopen = () => console.log("WebSocket connected");
             ws.onmessage = event => {
                 const data = JSON.parse(event.data);
