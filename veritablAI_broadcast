@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live News Broadcast</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            overflow-x: hidden;
+        }
+
+        .broadcast-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        /* Header with news branding */
+        .news-header {
+            background: linear-gradient(90deg, #c41e3a 0%, #8b0000 100%);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #ffd700;
+        }
+
+        .news-logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            letter-spacing: 2px;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .live-dot {
+            width: 12px;
+            height: 12px;
+            background: #ff0000;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .live-text {
+            color: #fff;
+            font-weight: bold;
+            font-size: 18px;
+            text-transform: uppercase;
+        }
+
+        /* Video/Content Area */
+        .broadcast-stage {
+            position: relative;
+            background: #1a1a1a;
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .recording-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 0, 0, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .recording-overlay.active {
+            display: flex;
+        }
+
+        .rec-dot {
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Lower Third Graphics */
+        .lower-third {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(90deg, rgba(196,30,58,0.95) 0%, rgba(139,0,0,0.95) 100%);
+            padding: 15px 30px;
+            transform: translateY(100%);
+            transition: transform 0.5s ease;
+        }
+
+        .lower-third.visible {
+            transform: translateY(0);
+        }
+
+        .name-title {
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #ffd700;
+            font-size: 14px;
+        }
+
+        /* Breaking News Banner */
+        .breaking-banner {
+            background: #ffd700;
+            color: #000;
+            padding: 10px 0;
+            overflow: hidden;
+            position: relative;
+            height: 40px;
+        }
+
+        .breaking-text {
+            font-weight: bold;
+            font-size: 16px;
+            white-space: nowrap;
+            position: absolute;
+            animation: scroll-left 20s linear infinite;
+        }
+
+        @keyframes scroll-left {
+            0% { left: 100%; }
+            100% { left: -100%; }
+        }
+
+        .breaking-label {
+            background: #c41e3a;
+            color: #fff;
+            padding: 10px 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin-right: 20px;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            background: #222;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .start-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .start-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .stop-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .stop-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        .stop-btn:disabled, .start-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Data Display */
+        .data-display {
+            background: #333;
+            padding: 20px 30px;
+            color: #fff;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #444;
+            border-radius: 5px;
+        }
+
+        .data-label {
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .data-value {
+            color: #fff;
+        }
+
+        /* Placeholder for no video */
+        .video-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+
+        .placeholder-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="broadcast-container">
+        <!-- News Header -->
+        <div class="news-header">
+            <div class="news-logo">📺 NEWS LIVE</div>
+            <div class="live-indicator">
+                <div class="live-dot"></div>
+                <div class="live-text">Live</div>
+            </div>
+        </div>
+
+        <!-- Breaking News Ticker -->
+        <div class="breaking-banner">
+            <div class="breaking-text">
+                <span class="breaking-label">BREAKING NEWS</span>
+                <span id="ticker-content">Welcome to the live broadcast • Stay tuned for updates • Real-time news coverage</span>
+            </div>
+        </div>
+
+        <!-- Main Broadcast Stage -->
+        <div class="broadcast-stage">
+            <div class="video-placeholder" id="placeholder">
+                <div class="placeholder-icon">🎥</div>
+                <div>Click "Start Broadcast" to begin</div>
+            </div>
+            <video id="video" style="display: none;"></video>
+            
+            <!-- Recording Indicator -->
+            <div class="recording-overlay" id="recording-indicator">
+                <div class="rec-dot"></div>
+                <span>REC</span>
+            </div>
+
+            <!-- Lower Third -->
+            <div class="lower-third" id="lower-third">
+                <div class="name-title" id="speaker-name">Live Broadcast</div>
+                <div class="subtitle" id="speaker-title">Real-time Analysis Active</div>
+            </div>
+        </div>
+
+        <!-- Data Display -->
+        <div class="data-display">
+            <div class="data-row">
+                <span class="data-label">Status:</span>
+                <span class="data-value" id="status">Ready</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Transcript:</span>
+                <span class="data-value" id="transcript">No audio detected yet...</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Analysis:</span>
+                <span class="data-value" id="analysis">Waiting for data...</span>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <button class="control-btn start-btn" id="start-btn">Start Broadcast</button>
+            <button class="control-btn stop-btn" id="stop-btn" disabled>Stop Broadcast</button>
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let stream;
+        let ws;
+        let isRecording = false;
+
+        const video = document.getElementById('video');
+        const placeholder = document.getElementById('placeholder');
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const recordingIndicator = document.getElementById('recording-indicator');
+        const lowerThird = document.getElementById('lower-third');
+        const statusEl = document.getElementById('status');
+        const transcriptEl = document.getElementById('transcript');
+        const analysisEl = document.getElementById('analysis');
+        const tickerContent = document.getElementById('ticker-content');
+
+        // Get supported MIME type
+        function getSupportedMimeType() {
+            const types = [
+                'audio/webm',
+                'audio/webm;codecs=opus',
+                'audio/ogg;codecs=opus',
+                'audio/mp4',
+                'audio/mpeg'
+            ];
+            
+            for (const type of types) {
+                if (MediaRecorder.isTypeSupported(type)) {
+                    return type;
+                }
+            }
+            return ''; // Let browser choose default
+        }
+
+        // Start broadcast
+        async function startBroadcast() {
+            try {
+                // Get media devices
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: true, 
+                    audio: true 
+                });
+
+                // Setup video
+                video.srcObject = stream;
+                video.style.display = 'block';
+                placeholder.style.display = 'none';
+
+                // Create a separate audio-only stream for recording
+                const audioStream = new MediaStream(stream.getAudioTracks());
+                
+                // Setup audio recording with supported MIME type
+                const mimeType = getSupportedMimeType();
+                const options = mimeType ? { mimeType } : {};
+                
+                try {
+                    mediaRecorder = new MediaRecorder(audioStream, options);
+                    console.log('Using MIME type:', mimeType || 'default');
+                } catch (recorderError) {
+                    // If specific MIME type fails, try without any options
+                    console.log('Trying default recorder settings');
+                    mediaRecorder = new MediaRecorder(audioStream);
+                }
+
+                // Setup WebSocket connection (replace with your endpoint)
+                // ws = new WebSocket("ws://your-backend-url:8000/ws/audio");
+                
+                // Simulated WebSocket for demo
+                // ws.onopen = () => {
+                //     console.log("WebSocket connected");
+                //     statusEl.textContent = "Connected - Broadcasting Live";
+                // };
+
+                // ws.onmessage = event => {
+                //     const data = JSON.parse(event.data);
+                //     transcriptEl.textContent = data.transcript || "Processing...";
+                //     analysisEl.textContent = data.analysis || "Analyzing...";
+                //     updateTicker(data.breaking_news);
+                // };
+
+                mediaRecorder.ondataavailable = event => {
+                    if (event.data.size > 0) {
+                        // Send to WebSocket when connected
+                        // if (ws && ws.readyState === WebSocket.OPEN) {
+                        //     event.data.arrayBuffer().then(buffer => ws.send(buffer));
+                        // }
+                    }
+                };
+
+                mediaRecorder.start(250);
+                isRecording = true;
+
+                // Update UI
+                recordingIndicator.classList.add('active');
+                lowerThird.classList.add('visible');
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                statusEl.textContent = "Live - Recording";
+
+                // Demo: Simulate updates
+                simulateUpdates();
+
+            } catch (err) {
+                alert('Error accessing camera/microphone: ' + err.message);
+                statusEl.textContent = "Error: " + err.message;
+            }
+        }
+
+        // Stop broadcast
+        function stopBroadcast() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+            }
+
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+
+            // if (ws) {
+            //     ws.close();
+            // }
+
+            video.style.display = 'none';
+            placeholder.style.display = 'flex';
+            recordingIndicator.classList.remove('active');
+            lowerThird.classList.remove('visible');
+            
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            statusEl.textContent = "Stopped";
+            isRecording = false;
+        }
+
+        // Update ticker with new content
+        function updateTicker(content) {
+            if (content) {
+                tickerContent.innerHTML = `<span class="breaking-label">BREAKING NEWS</span>${content}`;
+            }
+        }
+
+        // Simulate live updates for demo
+        function simulateUpdates() {
+            if (!isRecording) return;
+
+            const demoTranscripts = [
+                "Welcome to the live broadcast...",
+                "We are now analyzing the audio in real-time...",
+                "The system is detecting speech patterns...",
+                "Processing natural language...",
+                "Generating insights from the data..."
+            ];
+
+            const demoAnalysis = [
+                "Confidence: 95%",
+                "Sentiment: Neutral",
+                "Key topics detected",
+                "Analysis in progress",
+                "Data validated"
+            ];
+
+            let index = 0;
+            const interval = setInterval(() => {
+                if (!isRecording) {
+                    clearInterval(interval);
+                    return;
+                }
+
+                transcriptEl.textContent = demoTranscripts[index % demoTranscripts.length];
+                analysisEl.textContent = demoAnalysis[index % demoAnalysis.length];
+                index++;
+
+                // Update ticker occasionally
+                if (index % 3 === 0) {
+                    updateTicker(` Live update at ${new Date().toLocaleTimeString()} • System operational • ${index} updates processed`);
+                }
+            }, 3000);
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', startBroadcast);
+        stopBtn.addEventListener('click', stopBroadcast);
+
+        // Show lower third after a delay when recording starts
+        setTimeout(() => {
+            if (isRecording) {
+                lowerThird.classList.add('visible');
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
