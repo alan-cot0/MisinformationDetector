@@ -89,6 +89,11 @@
             top: 17px;
             left: 390px; 
         }
+        .banner-overlay {
+            position: absolute;
+            top: 436px;
+            left: 392px; 
+        }
         .overlay-parent {
             position: relative;
             top: 0;
@@ -122,6 +127,7 @@
     <div id="video-container" class="overlay-parent">
         <img src="images/sample_tv.png" width="675px" height="567px" class="static-bg"></img>
         <video id="video" autoplay muted class="overlaying"></video>
+        <img src="images/level0.png" class="banner-overlay" id="banner-overlay"></img>
     </div>
 
     <div class="all-buttons">
@@ -146,6 +152,8 @@
         const banner = document.getElementById('truth-banner');
         const startBtn = document.getElementById('start-btn');
         const homeBtn = document.getElementById('return-btn');
+        const bannerOverlay = document.getElementById('banner-overlay');
+        
 
         // Access webcam and microphone
         async function startMedia() {
@@ -165,10 +173,31 @@
             document.location.href = "index.html";
         }
 
-        startBtn.addEventListener('click', startMedia);
-        homeBtn.addEventListener('click', toHomePage)
+        function changeImage(level) {
+            var img = document.createElement('img');
+            var source;
+            switch(level) {
+            case 1:
+                source = "images/level1-30.png";
+                break;
+            case 2:
+                source = "images/level2-30.png";
+                break;
+            case 3: 
+                source = "images/level3.png";
+                break;
+            default:
+                source = "images/level0.png";
+            }
+            img.setAttribute('src', source);
+            bannerOverlay.appendChild(img);
+            bannerOverlay.setAttribute('src', source);
+        }
 
-        //THis is where the true project starts
+        startBtn.addEventListener('click', startMedia);
+        homeBtn.addEventListener('click', toHomePage);
+
+        //This is where the true project starts
         ws = new WebSocket("ws://veritablai.tech:8000/ws/audio");
         mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
 
