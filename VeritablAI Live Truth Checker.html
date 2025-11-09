@@ -58,6 +58,17 @@
             color: white;
             cursor: pointer;
         }
+        #stop-btn {
+            display: inline;
+            margin: 1rem auto;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            background-color: #1e90ff;
+            color: white;
+            cursor: pointer;
+        }        
         #start-btn:hover {
             background-color: #0c71c3;
         }
@@ -122,7 +133,7 @@
         <div id="truthScore"></div>
     </header>
     <div class="crop">
-        <img src="images/breaking_news2.gif" width="675px"></img>
+        <img src="images/breaking_news3.gif" width="675px"></img>
     </div>
     <div id="video-container" class="overlay-parent">
         <img src="images/sample_tv.png" width="675px" height="567px" class="static-bg"></img>
@@ -133,6 +144,7 @@
     <div class="all-buttons">
         <button id="start-btn">Start Checking</button>
         <button id="return-btn">Return to Home</button>
+        <button id="stop-btn">Stop Checking</button>
     </div>
 
     <div id="truth-banner">
@@ -225,7 +237,7 @@
             mediaRecorder.start(250); // 250ms chunks
         };
 
-        document.getElementById("stopBtn").onclick = () => {
+        document.getElementById("stop-btn").onclick = () => {
             mediaRecorder.stop();
             ws.close();
         };
